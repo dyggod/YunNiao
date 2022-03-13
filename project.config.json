@@ -42,5 +42,6 @@
   },
   "compileType": "miniprogram",
   "cloudfunctionRoot": "cloud/",
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate",
   "condition": {}
 }
