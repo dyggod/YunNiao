@@ -10,15 +10,19 @@ export default defineAppConfig({
     navigationBarTextStyle: 'black',
   },
   tabBar: {
-    list: [
-      {
-        pagePath: 'pages/index/index',
-        text: '首页',
-      },
-      {
-        pagePath: 'pages/user/index',
-        text: '个人中心',
-      },
-    ],
+    color: '#666',
+    selectedColor: '#b4282d',
+    backgroundColor: '#fafafa',
+    borderStyle: 'black',
+    list: [{
+      pagePath: 'pages/index/index',
+      text: '首页',
+    }, {
+      pagePath: 'pages/user/index',
+      text: '分类',
+    }, {
+      pagePath: 'pages/user/index',
+      text: '个人',
+    }],
   },
 });
