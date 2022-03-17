@@ -37,6 +37,10 @@
           </at-flex-item>
         </at-flex>
       </at-card>
+      <at-load-more
+        v-show="showLoadMore"
+        status="loading"
+      />
     </view>
     <at-message />
     <at-floatLayout :is-opened="showEdit">
@@ -59,7 +63,7 @@
 
 <script setup lang="ts">
 import {
-  ref, reactive,
+  ref, reactive, onBeforeMount,
 } from 'vue';
 import Taro from '@tarojs/taro';
 import { CloudRes } from '../../type';
@@ -82,6 +86,8 @@ interface LightShow {
 }
 
 const showEdit = ref(false);
+const showLoadMore = ref(false);
+const page = ref(1);
 const currentTab = ref(0);
 const light = reactive<Light>({
   text: '',
@@ -94,16 +100,31 @@ const barList = [
   { title: '其他' },
 ];
 
-function getLightList() {
-  Taro.cloud.callFunction({
+async function getLightList() {
+  const res = await Taro.cloud.callFunction({
     name: 'yy_getRecord',
-  }).then((res) => {
-    const result = res?.result as CloudRes;
-    if (result) {
-      const list = result.data as LightShow[];
-      lightList.value = list;
-    }
+    data: {
+      page: page.value,
+    },
   });
+  const result = res?.result as CloudRes;
+  if (result) {
+    const list = result.data as LightShow[];
+    list.forEach((l) => {
+      lightList.value.push(l);
+    });
+  }
+  return result.data;
+}
+
+// @ts-ignore
+// eslint-disable-next-line no-unused-vars
+async function updateList() {
+  const data = await getLightList();
+  if (data.length > 0) {
+    page.value += 1;
+  }
+  showLoadMore.value = false;
 }
 
 function clickTab(v) {
@@ -187,13 +208,21 @@ function previewImg(current: string, index: number) {
   });
 }
 
+onBeforeMount(() => {
+  getLightList();
+});
+
 </script>
 
 <script lang="ts">
 export default {
   // 对应 onShow
   onShow() {
-    this.getLightList();
+    // this.getLightList();
+  },
+  onReachBottom() {
+    this.showLoadMore = true;
+    this.updateList();
   },
 };
 </script>
