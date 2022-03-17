@@ -19,9 +19,6 @@ export default defineAppConfig({
       text: '首页',
     }, {
       pagePath: 'pages/user/index',
-      text: '分类',
-    }, {
-      pagePath: 'pages/user/index',
       text: '个人',
     }],
   },

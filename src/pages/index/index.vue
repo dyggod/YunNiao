@@ -10,13 +10,32 @@
         发布光影
       </at-button>
     </view>
-    <view class="light-list">
+    <view
+      class="light-list"
+    >
       <at-card
         v-for="(item, index) in lightList"
         :key="index"
         :title="item.text"
+        :icon="{value: 'tags', color: '#77a1fd'}"
       >
-        {{ item.text }}
+        <text>
+          {{ item.text }}
+        </text>
+        <at-flex>
+          <at-flex-item
+            v-for="(i, ind) in item.imgs"
+            :key="ind"
+            :size="4"
+            class="img-container"
+            @tap="previewImg(i, index)"
+          >
+            <image
+              :src="i.replace(/[\r\n]/g,'')"
+              class="img"
+            />
+          </at-flex-item>
+        </at-flex>
       </at-card>
     </view>
     <at-message />
@@ -39,14 +58,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onBeforeMount } from 'vue';
+import {
+  ref, reactive,
+} from 'vue';
 import Taro from '@tarojs/taro';
 import { CloudRes } from '../../type';
+import genId from '../../utils/genId';
 import './index.less';
-
-// interface CloudRes {
-//   data: any,
-// }
 
 interface ImgFile {
   url: string,
@@ -58,13 +76,18 @@ interface Light {
   imgs: ImgFile[],
 }
 
+interface LightShow {
+  text: string,
+  imgs: string[],
+}
+
 const showEdit = ref(false);
 const currentTab = ref(0);
 const light = reactive<Light>({
   text: '',
   imgs: [],
 });
-const lightList = ref<Light[]>([]);
+const lightList = ref<LightShow[]>([]);
 
 const barList = [
   { title: '光影' },
@@ -75,9 +98,11 @@ function getLightList() {
   Taro.cloud.callFunction({
     name: 'yy_getRecord',
   }).then((res) => {
-    const result = res.result as CloudRes;
-    const list = result.data as Light[];
-    lightList.value = list;
+    const result = res?.result as CloudRes;
+    if (result) {
+      const list = result.data as LightShow[];
+      lightList.value = list;
+    }
   });
 }
 
@@ -93,43 +118,56 @@ function textChange(v) {
   light.text = v;
 }
 
-function imgToBase64(path): string {
-  let res = '';
-  try {
-    const base64 = Taro.getFileSystemManager().readFileSync(path, 'base64');
-    if (base64) {
-      res = `data:image/jpeg;base64,${base64}`;
-    }
-  } catch (error) {
-    console.error(`image to base64 error: ${error}`);
-    throw error;
-  }
-  return res;
-}
+// function imgToBase64(path): string | ArrayBuffer {
+//   let res: string | ArrayBuffer = '';
+//   try {
+//     const base64 = Taro.getFileSystemManager().readFileSync(path);
+//     if (base64) {
+//       res = `data:image/jpeg;base64,${base64}`;
+//     }
+//   } catch (error) {
+//     console.error(`image to base64 error: ${error}`);
+//     throw error;
+//   }
+//   return res;
+// }
 
-function imgBase64Convert(pathArr: string[]) {
-  const out = pathArr.map((item) => imgToBase64(item));
-  return out;
-}
+// function imgBase64Convert(pathArr: string[]) {
+//   const out = pathArr.map((item) => imgToBase64(item));
+//   return out;
+// }
 
 function imgSelectChange(files) {
   light.imgs = files.files;
 }
 
 function clearInput() {
+  getLightList();
   showEdit.value = false;
   light.text = '';
   light.imgs = [];
 }
 
-function submit() {
-  const imgUrls = light.imgs.map((i) => i.url);
-  const imgs = imgBase64Convert(imgUrls);
+function uploadImgPromise(fileName: string, filePath: string) {
+  return Taro.cloud.uploadFile({
+    cloudPath: fileName,
+    filePath,
+  });
+}
+
+async function uploadAll(promiseArr: Promise<Taro.cloud.UploadFileResult>[]) {
+  return Promise.all(promiseArr);
+}
+
+async function submit() {
+  const imgTasks = light.imgs.map((i, index) => uploadImgPromise(`img-${genId()}-${index}.png`, i.url));
+  const data = await uploadAll(imgTasks);
+  const fileIdList = data.map((d) => d.fileID);
   Taro.cloud.callFunction({
     name: 'yy_addRecord',
     data: {
       text: light.text,
-      imgs,
+      imgs: fileIdList,
     },
   }).then(() => {
     Taro.atMessage({
@@ -138,18 +176,39 @@ function submit() {
     });
     clearInput();
   }).catch((err) => {
-    console.log('err: ', err);
+    console.error('err: ', err);
   });
 }
 
-onBeforeMount(() => {
-  getLightList();
-});
+function previewImg(current: string, index: number) {
+  Taro.previewImage({
+    current,
+    urls: lightList.value[index].imgs,
+  });
+}
 
+</script>
+
+<script lang="ts">
+export default {
+  // 对应 onShow
+  onShow() {
+    this.getLightList();
+  },
+};
 </script>
 
 <style lang="less">
 .top {
   display: flex;
+}
+
+.img-container {
+  height: 5rem;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
 }
 </style>
