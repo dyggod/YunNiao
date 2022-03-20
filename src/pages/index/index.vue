@@ -40,6 +40,16 @@
             />
           </at-flex-item>
         </at-flex>
+        <view class="delete-btn">
+          <at-button
+            v-if="item?.user?.nickName === userName"
+            size="small"
+            type="secondary"
+            @click="deleteRecord(index)"
+          >
+            删除
+          </at-button>
+        </view>
       </at-card>
       <at-load-more
         v-show="showLoadMore"
@@ -75,7 +85,7 @@
 import {
   ref, reactive, onBeforeMount,
 } from 'vue';
-import Taro, { useReachBottom } from '@tarojs/taro';
+import Taro, { useReachBottom, useDidShow } from '@tarojs/taro';
 import { CloudRes } from '../../type';
 import genId from '../../utils/genId';
 import store, { UserInfo } from '../../utils/store';
@@ -92,11 +102,13 @@ interface Light {
 }
 
 interface LightShow {
+  _id: string,
   text: string,
   imgs: string[],
   user: UserInfo,
 }
 
+const userName = ref<string>('');
 const showEdit = ref(false);
 const showLoadMore = ref(false);
 const page = ref(1);
@@ -111,6 +123,10 @@ const barList = [
   { title: '光影' },
   { title: '其他' },
 ];
+
+function initUser() {
+  userName.value = store.api.getUser().nickName;
+}
 
 async function getLightList() {
   const res = await Taro.cloud.callFunction({
@@ -209,7 +225,8 @@ async function uploadAll(promiseArr: Promise<Taro.cloud.UploadFileResult>[]) {
 }
 
 async function submit() {
-  const imgTasks = light.imgs.map((i, index) => uploadImgPromise(`img-${genId()}-${index}.png`, i.url));
+  const username = store.api.getUser().nickName;
+  const imgTasks = light.imgs.map((i, index) => uploadImgPromise(`${username}-${genId()}-${index}.png`, i.url));
   const data = await uploadAll(imgTasks);
   const fileIdList = data.map((d) => d.fileID);
   Taro.cloud.callFunction({
@@ -226,7 +243,10 @@ async function submit() {
     });
     closeSubmit();
   }).catch((err) => {
-    console.error('err: ', err);
+    Taro.atMessage({
+      message: `发布失败：${err}`,
+      type: 'error',
+    });
   });
 }
 
@@ -237,8 +257,46 @@ function previewImg(current: string, index: number) {
   });
 }
 
+function deleteRecord(index: number) {
+  const deleteLight = lightList.value[index];
+  const { imgs } = deleteLight;
+  Taro.cloud.deleteFile({
+    fileList: imgs,
+    success: async (res) => {
+      if (res.fileList.length > 0) {
+        const deleteRes = await Taro.cloud.callFunction({
+          name: 'yy_deleteRecord',
+          data: deleteLight,
+        });
+        if (deleteRes.result) {
+          lightList.value.splice(index, 1);
+          Taro.atMessage({
+            message: '删除成功',
+            type: 'success',
+          });
+        }
+      } else {
+        Taro.atMessage({
+          message: '删除失败',
+          type: 'error',
+        });
+      }
+    },
+    fail(error) {
+      Taro.atMessage({
+        message: `删除失败：${error}`,
+        type: 'error',
+      });
+    },
+  });
+}
+
 onBeforeMount(() => {
   getLightList();
+});
+
+useDidShow(() => {
+  initUser();
 });
 
 // 触底事件
@@ -262,5 +320,9 @@ useReachBottom(() => {
 .img {
   width: 100%;
   height: 100%;
+}
+
+.delete-btn {
+  margin-top: 0.5rem;
 }
 </style>
