@@ -1,5 +1,9 @@
 <template>
   <view class="index">
+    <at-load-more
+      v-show="showLoadMoreTop"
+      status="loading"
+    />
     <view class="top">
       <at-tab-bar
         :tab-list="barList"
@@ -85,7 +89,7 @@
 import {
   ref, reactive, onBeforeMount,
 } from 'vue';
-import Taro, { useReachBottom, useDidShow } from '@tarojs/taro';
+import Taro, { useReachBottom, usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import { CloudRes } from '../../type';
 import genId from '../../utils/genId';
 import store, { UserInfo } from '../../utils/store';
@@ -111,6 +115,7 @@ interface LightShow {
 const userName = ref<string>('');
 const showEdit = ref(false);
 const showLoadMore = ref(false);
+const showLoadMoreTop = ref(false);
 const page = ref(1);
 const currentTab = ref(0);
 const light = reactive<Light>({
@@ -200,10 +205,11 @@ function imgSelectChange(files) {
   light.imgs = files.files;
 }
 
-function refreshList() {
+async function refreshList() {
   page.value = 1;
   lightList.value = [];
-  getLightList();
+  await getLightList();
+  showLoadMoreTop.value = false;
 }
 
 function closeSubmit() {
@@ -297,6 +303,12 @@ onBeforeMount(() => {
 
 useDidShow(() => {
   initUser();
+});
+
+// 下拉事件
+usePullDownRefresh(() => {
+  showLoadMoreTop.value = true;
+  refreshList();
 });
 
 // 触底事件
