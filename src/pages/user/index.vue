@@ -1,13 +1,14 @@
 <template>
   <view class="user-page">
     <at-button
+      v-if="!loginStatus"
       type="primary"
       @click="login"
     >
       点击登录
     </at-button>
     <view
-      v-if="isLogin"
+      v-if="loginStatus"
       class="user-info"
     >
       <view class="avatar">
@@ -22,34 +23,26 @@
 </template>
 <script lang="ts" setup>
 import {
-  reactive, toRefs, onBeforeMount, onMounted, ref,
+  reactive, ref,
 } from 'vue';
-import Taro from '@tarojs/taro';
-import User from '../../utils/auth';
+import Taro, { useDidShow } from '@tarojs/taro';
+import store from '../../utils/store';
 
-interface UserInfo {
-  avatarUrl: string,
-  nickName: string,
-}
-
-const isLogin = ref(false);
+const loginStatus = ref(false);
 
 const userInfoShow = reactive({
   avatarUrl: '',
   nickName: '',
 });
 
-const userInfo = User.getInfo();
-console.log('userInfo: ', userInfo);
-
 function getStore() {
   try {
-    const user = Taro.getStorageSync('user') as UserInfo;
-    console.log('user: ', user);
+    loginStatus.value = store.api.getLogin();
+    const user = store.api.getUser();
     if (user) {
       userInfoShow.avatarUrl = user.avatarUrl;
       userInfoShow.nickName = user.nickName;
-      isLogin.value = true;
+      loginStatus.value = true;
     }
   } catch (error) {
     console.error(`getStorage error: ${error}`);
@@ -57,27 +50,19 @@ function getStore() {
 }
 
 function login() {
-  // Taro.authorize({
-  //   scope: 'scope.userInfo',
-  //   success(res) {
-  //     console.log('res: ', res);
-  //   },
-  // });
   Taro.getUserProfile({
     desc: '授权获取用户信息',
     success(res) {
-      console.log('res: ', res);
-      isLogin.value = true;
+      loginStatus.value = true;
       const { userInfo } = res;
       userInfoShow.avatarUrl = userInfo.avatarUrl;
       userInfoShow.nickName = userInfo.nickName;
-      Taro.setStorageSync('user', userInfo);
+      store.api.setLogin();
+      store.api.setUser(userInfo);
     },
   });
 }
 
-// @ts-ignore
-// eslint-disable-next-line no-unused-vars
 function isAuth() {
   Taro.getSetting({
     success(res) {
@@ -87,13 +72,10 @@ function isAuth() {
     },
   });
 }
-</script>
-<script lang="ts">
-export default {
-  onShow() {
-    this.login();
-  },
-};
+
+useDidShow(() => {
+  isAuth();
+});
 </script>
 <style lang='less'>
 .user-page, .user-info {

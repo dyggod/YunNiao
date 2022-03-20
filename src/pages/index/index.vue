@@ -6,7 +6,11 @@
         :current="currentTab"
         @click="clickTab"
       />
-      <at-button @click="clickShowEidt">
+      <at-button
+        type="primary"
+        size="small"
+        @click="clickShowEidt"
+      >
         发布光影
       </at-button>
     </view>
@@ -16,8 +20,8 @@
       <at-card
         v-for="(item, index) in lightList"
         :key="index"
-        :title="item.text"
-        :icon="{value: 'tags', color: '#77a1fd'}"
+        :title="item?.user?.nickName || '未知用户'"
+        :thumb="item?.user?.avatarUrl"
       >
         <text>
           {{ item.text }}
@@ -43,10 +47,10 @@
       />
     </view>
     <at-message />
-    <at-floatLayout :is-opened="showEdit">
-      <at-button @click="submit">
-        发布
-      </at-button>
+    <at-floatLayout
+      :is-opened="showEdit"
+      @close="closeFloat"
+    >
       <at-textarea
         :value="light.text"
         :count="false"
@@ -57,6 +61,12 @@
         :files="light.imgs"
         @change="imgSelectChange"
       />
+      <at-button
+        type="primary"
+        @click="submit"
+      >
+        发布
+      </at-button>
     </at-floatLayout>
   </view>
 </template>
@@ -65,9 +75,10 @@
 import {
   ref, reactive, onBeforeMount,
 } from 'vue';
-import Taro from '@tarojs/taro';
+import Taro, { useReachBottom } from '@tarojs/taro';
 import { CloudRes } from '../../type';
 import genId from '../../utils/genId';
+import store, { UserInfo } from '../../utils/store';
 import './index.less';
 
 interface ImgFile {
@@ -83,6 +94,7 @@ interface Light {
 interface LightShow {
   text: string,
   imgs: string[],
+  user: UserInfo,
 }
 
 const showEdit = ref(false);
@@ -110,6 +122,9 @@ async function getLightList() {
   const result = res?.result as CloudRes;
   if (result) {
     const list = result.data as LightShow[];
+    if (list.length > 0) {
+      page.value += 1;
+    }
     list.forEach((l) => {
       lightList.value.push(l);
     });
@@ -117,13 +132,8 @@ async function getLightList() {
   return result.data;
 }
 
-// @ts-ignore
-// eslint-disable-next-line no-unused-vars
 async function updateList() {
-  const data = await getLightList();
-  if (data.length > 0) {
-    page.value += 1;
-  }
+  await getLightList();
   showLoadMore.value = false;
 }
 
@@ -132,7 +142,19 @@ function clickTab(v) {
 }
 
 function clickShowEidt() {
+  const login = store.api.getLogin();
+  if (login !== true) {
+    Taro.atMessage({
+      message: '请先登录',
+      type: 'warning',
+    });
+    return;
+  }
   showEdit.value = true;
+}
+
+function closeFloat() {
+  showEdit.value = false;
 }
 
 function textChange(v) {
@@ -162,8 +184,14 @@ function imgSelectChange(files) {
   light.imgs = files.files;
 }
 
-function clearInput() {
+function refreshList() {
+  page.value = 1;
+  lightList.value = [];
   getLightList();
+}
+
+function closeSubmit() {
+  refreshList();
   showEdit.value = false;
   light.text = '';
   light.imgs = [];
@@ -189,13 +217,14 @@ async function submit() {
     data: {
       text: light.text,
       imgs: fileIdList,
+      user: store.api.getUser(),
     },
   }).then(() => {
     Taro.atMessage({
       message: '发布成功',
       type: 'success',
     });
-    clearInput();
+    closeSubmit();
   }).catch((err) => {
     console.error('err: ', err);
   });
@@ -212,24 +241,18 @@ onBeforeMount(() => {
   getLightList();
 });
 
-</script>
+// 触底事件
+useReachBottom(() => {
+  showLoadMore.value = true;
+  updateList();
+});
 
-<script lang="ts">
-export default {
-  // 对应 onShow
-  onShow() {
-    // this.getLightList();
-  },
-  onReachBottom() {
-    this.showLoadMore = true;
-    this.updateList();
-  },
-};
 </script>
 
 <style lang="less">
 .top {
   display: flex;
+  align-items: center;
 }
 
 .img-container {
