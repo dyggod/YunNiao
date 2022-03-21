@@ -15,10 +15,15 @@
         size="small"
         @click="clickShowEidt"
       >
-        发布光影
+        {{ getBtnText() }}
       </at-button>
     </view>
+    <CookList
+      v-if="currentTab === 1"
+      ref="cook"
+    />
     <view
+      v-if="currentTab === 0"
       class="light-list"
     >
       <at-card
@@ -90,6 +95,7 @@ import {
   ref, reactive, onBeforeMount,
 } from 'vue';
 import Taro, { useReachBottom, usePullDownRefresh, useDidShow } from '@tarojs/taro';
+import CookList from '../cookList/index.vue';
 import { CloudRes } from '../../type';
 import genId from '../../utils/genId';
 import store, { UserInfo } from '../../utils/store';
@@ -113,6 +119,8 @@ interface LightShow {
 }
 
 const userName = ref<string>('');
+const cook = ref<null | HTMLElement>(null);
+
 const showEdit = ref(false);
 const showLoadMore = ref(false);
 const showLoadMoreTop = ref(false);
@@ -126,11 +134,22 @@ const lightList = ref<LightShow[]>([]);
 
 const barList = [
   { title: '光影' },
-  { title: '其他' },
+  { title: '美食' },
 ];
 
 function initUser() {
   userName.value = store.api.getUser().nickName;
+}
+
+function getBtnText() {
+  switch (currentTab.value) {
+    case 0:
+      return '发布光影';
+    case 1:
+      return '贡献食谱';
+    default:
+      return '待开发';
+  }
 }
 
 async function getLightList() {
@@ -159,6 +178,7 @@ async function updateList() {
 }
 
 function clickTab(v) {
+  console.log('v: ', v);
   currentTab.value = v;
 }
 
@@ -171,7 +191,12 @@ function clickShowEidt() {
     });
     return;
   }
-  showEdit.value = true;
+
+  if (currentTab.value === 0) {
+    showEdit.value = true;
+  } else if (currentTab.value === 1) {
+    console.log(123);
+  }
 }
 
 function closeFloat() {
@@ -181,25 +206,6 @@ function closeFloat() {
 function textChange(v) {
   light.text = v;
 }
-
-// function imgToBase64(path): string | ArrayBuffer {
-//   let res: string | ArrayBuffer = '';
-//   try {
-//     const base64 = Taro.getFileSystemManager().readFileSync(path);
-//     if (base64) {
-//       res = `data:image/jpeg;base64,${base64}`;
-//     }
-//   } catch (error) {
-//     console.error(`image to base64 error: ${error}`);
-//     throw error;
-//   }
-//   return res;
-// }
-
-// function imgBase64Convert(pathArr: string[]) {
-//   const out = pathArr.map((item) => imgToBase64(item));
-//   return out;
-// }
 
 function imgSelectChange(files) {
   light.imgs = files.files;
