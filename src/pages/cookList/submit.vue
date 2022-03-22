@@ -1,5 +1,20 @@
 <template>
   <view>
+    <view class="back">
+      <at-icon
+        value="chevron-left"
+        size="30"
+        color="#ccc"
+      />
+      <at-button
+        type="secondary"
+        size="small"
+        class="btn"
+        @click="back"
+      >
+        返回
+      </at-button>
+    </view>
     <at-form>
       <view class="cook-type example-item">
         <picker
@@ -89,6 +104,7 @@
       </view>
       <at-button
         form-type="submit"
+        type="primary"
         @click="submit"
       >
         提交审核
@@ -99,12 +115,14 @@
 
 <script lang='ts' setup>
 import {
-  reactive, toRefs, onBeforeMount, onMounted,
+  reactive, defineEmits,
 } from 'vue';
 import Taro from '@tarojs/taro';
 import { uploadImgPromise, uploadAllImg } from '../../utils/cloudFiles';
-import store from '../../utils/store';
+import store, { UserInfo } from '../../utils/store';
 import { genFileName } from '../../utils/genId';
+
+const emit = defineEmits(['closeForm']);
 
 const filePrefix: string = 'cook';
 
@@ -141,6 +159,10 @@ const cookData = reactive<CookData>({
   outcome: [],
 });
 
+function back() {
+  emit('closeForm');
+}
+
 function typeChange(e) {
   cookData.type = e.detail.value;
 }
@@ -169,7 +191,7 @@ function imgSelectChange(files) {
   cookData.outcome = files.files;
 }
 
-function convertCookData(fileIdList: string[]) {
+function convertCookData(fileIdList: string[], user: UserInfo) {
   return {
     type: cookRange[cookData.type],
     name: cookData.name,
@@ -177,34 +199,48 @@ function convertCookData(fileIdList: string[]) {
     excipient: cookData.excipient,
     step: cookData.step,
     outcome: fileIdList,
+    review: false,
+    user: {
+      nickName: user.nickName,
+      avatarUrl: user.avatarUrl,
+    },
   };
 }
 
 async function submit() {
-  console.log(cookData);
   const user = store.api.getUser();
   const imgTasks = cookData.outcome.map(
     (i, index) => uploadImgPromise(genFileName(filePrefix, user.nickName, index), i.url),
   );
   const uploadData = await uploadAllImg(imgTasks);
   const fileIdList = uploadData.map((d) => d.fileID);
-  const submitData = convertCookData(fileIdList);
+  const submitData = convertCookData(fileIdList, user);
   Taro.cloud.callFunction({
     name: 'yy_addCook',
     data: submitData,
-  }).then((res) => {
-    console.log('res: ', res);
+  }).then(() => {
     Taro.atMessage({
       message: '已提交，等待审核，审核后将出现在食谱列表',
       type: 'success',
     });
+    back();
   }).catch((err) => {
     console.error('err: ', err);
   });
 }
 
 </script>
-<style lang='scss'>
+<style lang='less'>
+.back {
+  display: flex;
+  justify-content: left;
+  margin: 0.5rem 0;
+
+  .btn {
+    margin: 0;
+  }
+}
+
 .picker__page .example-item {
   .at-list__item .item-extra__info {
     max-width: 300px;

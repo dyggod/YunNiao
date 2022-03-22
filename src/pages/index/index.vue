@@ -8,11 +8,13 @@
       <at-tab-bar
         :tab-list="barList"
         :current="currentTab"
+        class="tab-bar"
         @click="clickTab"
       />
       <at-button
         type="primary"
         size="small"
+        class="btn"
         @click="clickShowEidt"
       >
         {{ getBtnText() }}
@@ -118,8 +120,12 @@ interface LightShow {
   user: UserInfo,
 }
 
+interface CookExspose {
+  showForm(): void
+}
+
 const userName = ref<string>('');
-const cook = ref<null | HTMLElement>(null);
+const cook = ref<null | CookExspose>();
 
 const showEdit = ref(false);
 const showLoadMore = ref(false);
@@ -195,7 +201,9 @@ function clickShowEidt() {
   if (currentTab.value === 0) {
     showEdit.value = true;
   } else if (currentTab.value === 1) {
-    console.log(123);
+    if (cook.value) {
+      cook.value.showForm();
+    }
   }
 }
 
@@ -326,13 +334,40 @@ useReachBottom(() => {
 </script>
 
 <style lang="less">
+.index {
+  position: relative;
+  padding-top: 90px;
+}
+
 .top {
   display: flex;
   align-items: center;
+  position: fixed;
+  box-sizing: border-box;
+  width: 100%;
+  height: 80px;
+  padding: 0 16px;
+  background-color: #eee;
+  z-index: 1000;
+  top: 0;
+
+  .tab-bar {
+    background-color: #eee !important;
+  }
+
+  .btn {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
 }
 
 .img-container {
-  height: 5rem;
+  height: 6rem;
+  padding: 0 0.1rem;
+  image {
+    border-radius: 0.2rem;
+  }
 }
 
 .img {
