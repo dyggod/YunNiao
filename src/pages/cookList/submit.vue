@@ -121,13 +121,12 @@ import Taro from '@tarojs/taro';
 import { uploadImgPromise, uploadAllImg } from '../../utils/cloudFiles';
 import store, { UserInfo } from '../../utils/store';
 import { genFileName } from '../../utils/genId';
+import { CookRange } from '../../config/cook';
 import { CookData } from './types';
 
 const emit = defineEmits(['closeForm']);
 
 const filePrefix: string = 'cook';
-
-const cookRange = ['家常炒菜', '海鲜', '淡水鱼', '汤类'];
 
 const cookData = reactive<CookData>({
   type: 0,
@@ -137,6 +136,8 @@ const cookData = reactive<CookData>({
   step: [{ step: '' }],
   outcome: [],
 });
+
+const cookRange = CookRange.map((i) => i.value);
 
 function back() {
   emit('closeForm');

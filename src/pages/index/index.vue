@@ -33,6 +33,7 @@
         :key="index"
         :title="item?.user?.nickName || '未知用户'"
         :thumb="item?.user?.avatarUrl"
+        class="one-light"
       >
         <text>
           {{ item.text }}
@@ -321,14 +322,18 @@ useDidShow(() => {
 
 // 下拉事件
 usePullDownRefresh(() => {
-  showLoadMoreTop.value = true;
-  refreshList();
+  if (currentTab.value === 0) {
+    showLoadMoreTop.value = true;
+    refreshList();
+  }
 });
 
 // 触底事件
 useReachBottom(() => {
-  showLoadMore.value = true;
-  updateList();
+  if (currentTab.value === 0) {
+    showLoadMore.value = true;
+    updateList();
+  }
 });
 
 </script>
@@ -359,6 +364,12 @@ useReachBottom(() => {
     height: 100%;
     display: flex;
     align-items: center;
+  }
+}
+
+.light-list {
+  .one-light {
+    margin-bottom: 0.2rem;
   }
 }
 
