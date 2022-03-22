@@ -121,32 +121,11 @@ import Taro from '@tarojs/taro';
 import { uploadImgPromise, uploadAllImg } from '../../utils/cloudFiles';
 import store, { UserInfo } from '../../utils/store';
 import { genFileName } from '../../utils/genId';
+import { CookData } from './types';
 
 const emit = defineEmits(['closeForm']);
 
 const filePrefix: string = 'cook';
-
-interface ImgFile {
-  url: string,
-  size: number,
-}
-
-interface NameValue {
-  name: string,
-}
-
-interface StepValue {
-  step: string,
-}
-
-interface CookData {
-  type: number,
-  name: string,
-  mainMaterial: NameValue[],
-  excipient: NameValue[],
-  step: StepValue[],
-  outcome: ImgFile[],
-}
 
 const cookRange = ['家常炒菜', '海鲜', '淡水鱼', '汤类'];
 
@@ -200,6 +179,7 @@ function convertCookData(fileIdList: string[], user: UserInfo) {
     step: cookData.step,
     outcome: fileIdList,
     review: false,
+    pass: false,
     user: {
       nickName: user.nickName,
       avatarUrl: user.avatarUrl,
