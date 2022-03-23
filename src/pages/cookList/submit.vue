@@ -78,14 +78,22 @@
       </view>
       <view class="step">
         <text>烹饪步骤</text>
-        <at-input
+        <view
           v-for="(item,index) in cookData.step"
           :key="index"
-          v-model:value="item.step"
-          :title="`步骤${index + 1}`"
-          placeholder="请输入操作内容"
-          type="text"
-        />
+          class="step-input"
+        >
+          <text class="label">
+            步骤{{ index + 1 }}
+          </text>
+          <input
+            v-model="item.step"
+            placeholder="请输入操作内容"
+            cursor-spacing="50"
+            type="text"
+            placeholder-class="placeholder"
+          >
+        </view>
         <at-button
           size="small"
           type="primary"
@@ -265,6 +273,23 @@ async function submit() {
 
   &__value {
     color: #999;
+  }
+}
+
+.step-input {
+  display: flex;
+  height: 2rem;
+  font-size: 1rem;
+  padding-left: 1rem;
+  padding-top: 24px;
+  padding-bottom: 24px;
+
+  .label {
+    width: 6rem;
+  }
+
+  input {
+    color: #333;
   }
 }
 </style>
