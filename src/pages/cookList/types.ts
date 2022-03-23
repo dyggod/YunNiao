@@ -34,4 +34,5 @@ export interface CookReview {
     nickName: string,
     avatarUrl: string,
   },
+  dateTime: string,
 }

@@ -209,7 +209,7 @@ async function submit() {
     data: submitData,
   }).then(() => {
     Taro.atMessage({
-      message: '已提交，等待审核，审核后将出现在食谱列表',
+      message: '已提交，等待审核，审核后将出现在食谱列表，可在"个人"中查看状态',
       type: 'success',
     });
     back();

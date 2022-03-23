@@ -30,6 +30,14 @@
     <view v-if="reviewVisible">
       <CookReview @close="closeReview" />
     </view>
+    <view>
+      <at-button @click="toMyCook">
+        我的食谱
+      </at-button>
+    </view>
+    <view>
+      <MyCook v-if="myCookVisible" />
+    </view>
   </view>
 </template>
 <script lang="ts" setup>
@@ -38,6 +46,7 @@ import {
 } from 'vue';
 import Taro, { useDidShow } from '@tarojs/taro';
 import CookReview from '../cookReview/index.vue';
+import MyCook from './MyCook.vue';
 import store from '../../utils/store';
 
 interface AuthRes {
@@ -48,6 +57,7 @@ interface AuthRes {
 
 const loginStatus = ref(false);
 const reviewVisible = ref<boolean>(false);
+const myCookVisible = ref<boolean>(false);
 
 const userInfoShow = reactive({
   avatarUrl: '',
@@ -111,7 +121,13 @@ function isAuth() {
 }
 
 function toReview() {
+  myCookVisible.value = false;
   reviewVisible.value = true;
+}
+
+function toMyCook() {
+  reviewVisible.value = false;
+  myCookVisible.value = true;
 }
 
 function closeReview() {
