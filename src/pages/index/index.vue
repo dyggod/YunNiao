@@ -87,7 +87,7 @@
         type="primary"
         @click="submit"
       >
-        发布
+        记录
       </at-button>
     </at-floatLayout>
   </view>
@@ -151,7 +151,7 @@ function initUser() {
 function getBtnText() {
   switch (currentTab.value) {
     case 0:
-      return '发布光影';
+      return '记录光影';
     case 1:
       return '贡献食谱';
     default:
@@ -259,13 +259,13 @@ async function submit() {
     },
   }).then(() => {
     Taro.atMessage({
-      message: '发布成功',
+      message: '记录成功',
       type: 'success',
     });
     closeSubmit();
   }).catch((err) => {
     Taro.atMessage({
-      message: `发布失败：${err}`,
+      message: `记录失败：${err}`,
       type: 'error',
     });
   });

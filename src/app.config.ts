@@ -16,10 +16,10 @@ export default defineAppConfig({
     borderStyle: 'black',
     list: [{
       pagePath: 'pages/index/index',
-      text: '首页',
+      text: '影•食',
     }, {
       pagePath: 'pages/user/index',
-      text: '个人',
+      text: 'MY',
     }],
   },
 });

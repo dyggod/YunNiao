@@ -1,5 +1,5 @@
 export default definePageConfig({
-  navigationBarTitleText: '首页',
+  navigationBarTitleText: '影•食',
   enablePullDownRefresh: true,
   onReachBottomDistance: 0,
 });
