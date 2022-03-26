@@ -7,11 +7,9 @@
           :key="index"
           class="item"
           :title="item.name || '未命名'"
-          :note="genReviewStr(item.review, item.pass)"
+          :note="genReviewStr(item)"
           :extra-text="format(item.dateTime)"
-        >
-          44
-        </at-list-item>
+        />
       </at-list>
     </view>
     <view>
@@ -56,11 +54,12 @@ async function getMyCookList() {
   myCookList.value = myCookList.value.concat(data);
 }
 
-function genReviewStr(review: boolean, pass: boolean) {
+function genReviewStr(item: CookReview) {
+  const { review, pass, reason } = item;
   if (review === true && pass === true) {
     return '审核通过，已发布';
   } if (review === true && pass === false) {
-    return '审核未通过';
+    return `审核未通过，原因：${reason || '未给出描述'}`;
   } if (review === false) {
     return '审核中...';
   }

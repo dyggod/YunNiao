@@ -30,6 +30,7 @@ export interface CookReview {
   outcome: string[],
   review: boolean,
   pass: boolean,
+  reason: boolean | string,
   user: {
     nickName: string,
     avatarUrl: string,

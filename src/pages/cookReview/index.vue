@@ -70,12 +70,35 @@
           <at-button
             size="small"
             class="btn"
-            @click="reviewCook(item, false)"
+            @click="clickRefuse(item)"
           >
             不通过
           </at-button>
         </view>
       </at-card>
+    </view>
+    <view>
+      <at-action-sheet
+        :is-opened="refuseVisible"
+        title="请提交审核不通过理由"
+        @close="refuseVisible = false"
+      >
+        <at-action-sheet-item>
+          <view class="custom-input">
+            <input
+              v-model="refuseReason"
+              type="text"
+              placeholder="请输入"
+              cursor-spacing="50"
+            >
+          </view>
+        </at-action-sheet-item>
+        <at-action-sheet-item>
+          <at-button @click="refuseConfirm">
+            提交
+          </at-button>
+        </at-action-sheet-item>
+      </at-action-sheet>
     </view>
     <view class="bottom-option">
       <at-button
@@ -108,6 +131,9 @@ import { CookReview } from '../cookList/types';
 import { CloudRes } from '../../type';
 
 const reviewList = ref<CookReview[]>([]);
+const refuseVisible = ref<boolean>(false);
+const nowRefues = ref<CookReview>();
+const refuseReason = ref('');
 
 const emits = defineEmits(['close']);
 
@@ -125,18 +151,32 @@ function refresh() {
   getNotReview();
 }
 
+function clickRefuse(cook: CookReview) {
+  refuseReason.value = '';
+  nowRefues.value = cook;
+  refuseVisible.value = true;
+}
+
 function reviewCook(cook: CookReview, pass: boolean) {
   Taro.cloud.callFunction({
     name: 'yy_reviewCook',
     data: {
       _id: cook._id,
       pass,
+      reason: pass || refuseReason.value,
     },
   }).then(() => {
     refresh();
   }).catch((error) => {
     console.log('审核食谱云函数错误: ', error);
   });
+}
+
+function refuseConfirm() {
+  if (nowRefues.value) {
+    reviewCook(nowRefues.value, false);
+  }
+  refuseVisible.value = false;
 }
 
 function closeReview() {

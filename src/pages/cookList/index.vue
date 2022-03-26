@@ -165,7 +165,7 @@ function getCookList(type: string) {
   });
 }
 
-function clickType(item: {image: string, value: string}) {
+function clickType(item: any) {
   getCookList(item.value);
 }
 
