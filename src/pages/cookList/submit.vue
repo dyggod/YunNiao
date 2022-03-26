@@ -49,7 +49,16 @@
           :title="`食材${index + 1}`"
           placeholder="请输入食材"
           type="text"
-        />
+        >
+          <view>
+            <at-icon
+              value="close"
+              size="10"
+              color="#F00"
+              @click="deleteItem('主食材', index)"
+            />
+          </view>
+        </at-input>
         <at-button
           size="small"
           type="primary"
@@ -67,7 +76,16 @@
           :title="`辅料${index + 1}`"
           placeholder="请输入辅料"
           type="text"
-        />
+        >
+          <view>
+            <at-icon
+              value="close"
+              size="10"
+              color="#F00"
+              @click="deleteItem('辅料', index)"
+            />
+          </view>
+        </at-input>
         <at-button
           size="small"
           type="primary"
@@ -93,6 +111,13 @@
             type="text"
             placeholder-class="placeholder"
           >
+          <at-icon
+            value="close"
+            size="10"
+            color="#F00"
+            class="delete"
+            @click="deleteItem('步骤', index)"
+          />
         </view>
         <at-button
           size="small"
@@ -179,6 +204,22 @@ function imgSelectChange(files) {
   cookData.outcome = files.files;
 }
 
+function deleteItem(attr: string, index: number) {
+  switch (attr) {
+    case '主食材':
+      cookData.mainMaterial.splice(index, 1);
+      break;
+    case '辅料':
+      cookData.excipient.splice(index, 1);
+      break;
+    case '步骤':
+      cookData.step.splice(index, 1);
+      break;
+    default:
+      break;
+  }
+}
+
 function convertCookData(fileIdList: string[], user: UserInfo) {
   return {
     type: cookRange[cookData.type],
@@ -204,21 +245,21 @@ function checkBeforeSubmit() {
     });
     return false;
   }
-  if (cookData.mainMaterial.length === 1 && !cookData.mainMaterial[0].name) {
+  if (cookData.mainMaterial.length <= 1 && !cookData.mainMaterial[0]?.name) {
     Taro.atMessage({
       message: '怎么着也得有个主要食材啊',
       type: 'warning',
     });
     return false;
   }
-  if (cookData.excipient.length === 1 && !cookData.excipient[0].name) {
+  if (cookData.excipient.length <= 1 && !cookData.excipient[0]?.name) {
     Taro.atMessage({
       message: '辅料也是必不可少的',
       type: 'warning',
     });
     return false;
   }
-  if (cookData.step.length === 1 && !cookData.step[0].step) {
+  if (cookData.step.length <= 1 && !cookData.step[0]?.step) {
     Taro.atMessage({
       message: '请献出你的烹饪步骤',
       type: 'warning',
@@ -324,13 +365,22 @@ async function submit() {
   padding-left: 1rem;
   padding-top: 24px;
   padding-bottom: 24px;
+  justify-content: space-between;
+  align-items: center;
 
   .label {
-    width: 6rem;
+    width: 22%;
   }
 
   input {
-    color: #333;
+    width: 65%;
+    border-right: 1px solid #eee;
+  }
+
+  .delete {
+    width: 12%;
+    display: flex;
+    justify-content: center;
   }
 }
 </style>
