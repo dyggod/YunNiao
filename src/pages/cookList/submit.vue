@@ -196,26 +196,67 @@ function convertCookData(fileIdList: string[], user: UserInfo) {
   };
 }
 
-async function submit() {
-  const user = store.api.getUser();
-  const imgTasks = cookData.outcome.map(
-    (i, index) => uploadImgPromise(genFileName(filePrefix, user.nickName, index), i.url),
-  );
-  const uploadData = await uploadAllImg(imgTasks);
-  const fileIdList = uploadData.map((d) => d.fileID);
-  const submitData = convertCookData(fileIdList, user);
-  Taro.cloud.callFunction({
-    name: 'yy_addCook',
-    data: submitData,
-  }).then(() => {
+function checkBeforeSubmit() {
+  if (cookData.name === '') {
     Taro.atMessage({
-      message: '已提交，等待审核，审核后将出现在食谱列表，可在"个人"中查看状态',
-      type: 'success',
+      message: '请给美食填个名字吧',
+      type: 'warning',
     });
-    back();
-  }).catch((err) => {
-    console.error('err: ', err);
-  });
+    return false;
+  }
+  if (cookData.mainMaterial.length === 1 && !cookData.mainMaterial[0].name) {
+    Taro.atMessage({
+      message: '怎么着也得有个主要食材啊',
+      type: 'warning',
+    });
+    return false;
+  }
+  if (cookData.excipient.length === 1 && !cookData.excipient[0].name) {
+    Taro.atMessage({
+      message: '辅料也是必不可少的',
+      type: 'warning',
+    });
+    return false;
+  }
+  if (cookData.step.length === 1 && !cookData.step[0].step) {
+    Taro.atMessage({
+      message: '请献出你的烹饪步骤',
+      type: 'warning',
+    });
+    return false;
+  }
+  if (cookData.outcome.length === 0) {
+    Taro.atMessage({
+      message: '请至少添加一张出餐照片，给吃货们参考',
+      type: 'warning',
+    });
+    return false;
+  }
+  return true;
+}
+
+async function submit() {
+  if (checkBeforeSubmit()) {
+    const user = store.api.getUser();
+    const imgTasks = cookData.outcome.map(
+      (i, index) => uploadImgPromise(genFileName(filePrefix, user.nickName, index), i.url),
+    );
+    const uploadData = await uploadAllImg(imgTasks);
+    const fileIdList = uploadData.map((d) => d.fileID);
+    const submitData = convertCookData(fileIdList, user);
+    Taro.cloud.callFunction({
+      name: 'yy_addCook',
+      data: submitData,
+    }).then(() => {
+      Taro.atMessage({
+        message: '已提交，等待审核，审核后将出现在食谱列表，可在"个人"中查看状态',
+        type: 'success',
+      });
+      back();
+    }).catch((err) => {
+      console.error('err: ', err);
+    });
+  }
 }
 
 </script>
