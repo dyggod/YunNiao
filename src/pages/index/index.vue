@@ -76,6 +76,7 @@
       <at-textarea
         :value="light.text"
         :count="false"
+        placeholder="书写你的光影记录"
         @change="textChange"
       />
       <at-image-picker
