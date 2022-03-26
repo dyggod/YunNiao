@@ -27,16 +27,23 @@
         审核食谱
       </at-button>
     </view>
+    <view v-if="!reviewVisible && !myCookVisible">
+      <at-button
+        type="primary"
+        class="btn"
+        @click="toMyCook"
+      >
+        我的食谱
+      </at-button>
+    </view>
     <view v-if="reviewVisible">
       <CookReview @close="closeReview" />
     </view>
     <view>
-      <at-button @click="toMyCook">
-        我的食谱
-      </at-button>
-    </view>
-    <view>
-      <MyCook v-if="myCookVisible" />
+      <MyCook
+        v-if="myCookVisible"
+        @close="closeMyCook"
+      />
     </view>
   </view>
 </template>
@@ -134,6 +141,10 @@ function closeReview() {
   reviewVisible.value = false;
 }
 
+function closeMyCook() {
+  myCookVisible.value = false;
+}
+
 useDidShow(() => {
   isAuth();
 });
@@ -146,6 +157,10 @@ useDidShow(() => {
 .avatar {
   display: flex;
   justify-content: center;
+}
+
+.btn {
+  margin: 0.5rem 0;
 }
 
 </style>

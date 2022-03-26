@@ -165,6 +165,14 @@ onMounted(() => {
 }
 
 .bottom-option {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  .btn {
+    width: 100%;
+  }
+
   .btn:first-child {
     margin-bottom: 0.5rem;
   }

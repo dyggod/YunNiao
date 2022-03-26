@@ -1,6 +1,6 @@
 <template>
   <view class="my-cook">
-    <view>
+    <view class="list">
       <at-list>
         <at-list-item
           v-for="(item, index) in myCookList"
@@ -14,23 +14,46 @@
         </at-list-item>
       </at-list>
     </view>
+    <view>
+      <at-load-more
+        :status="loadStatus"
+        @click="loadMore"
+      />
+      <at-button
+        type="primary"
+        @click="closeList"
+      >
+        关闭
+      </at-button>
+    </view>
   </view>
 </template>
 
 <script lang='ts' setup>
 import {
-  ref, onMounted,
+  ref, onMounted, defineEmits,
 } from 'vue';
 import { CookReview } from '../cookList/types';
 import { callClound } from '../../utils/taro';
 import { format } from '../../utils/time';
 
 const myCookList = ref<CookReview[]>([]);
+const page = ref(1);
+const loadStatus = ref('more');
+const emits = defineEmits(['close']);
 
 async function getMyCookList() {
-  const res = await callClound('yy_myCook');
+  const res = await callClound('yy_myCook', {
+    page: page.value,
+  });
   const { data } = res;
-  myCookList.value = data;
+  if (data.length > 0) {
+    page.value += 1;
+    loadStatus.value = 'more';
+  } else {
+    loadStatus.value = 'noMore';
+  }
+  myCookList.value = myCookList.value.concat(data);
 }
 
 function genReviewStr(review: boolean, pass: boolean) {
@@ -44,6 +67,15 @@ function genReviewStr(review: boolean, pass: boolean) {
   return '审核中...';
 }
 
+function loadMore() {
+  loadStatus.value = 'loading';
+  getMyCookList();
+}
+
+function closeList() {
+  emits('close');
+}
+
 onMounted(() => {
   getMyCookList();
 });
@@ -51,6 +83,10 @@ onMounted(() => {
 <style lang='less'>
 
 .my-cook {
+  .list {
+    max-height: 20rem;
+    overflow-y: scroll;
+  }
   .item {
     border-bottom: 1px solid #eee;
   }
