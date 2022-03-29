@@ -22,6 +22,10 @@ const api = {
     Taro.setStorageSync(ADMIN, true);
   },
 
+  setNotAdmin() {
+    Taro.setStorageSync(ADMIN, false);
+  },
+
   outLogin() {
     Taro.setStorageSync(LOGIN_STATUS, false);
   },

@@ -34,6 +34,8 @@
         :title="item?.user?.nickName || '未知用户'"
         :thumb="item?.user?.avatarUrl"
         class="one-light"
+        :extra="format(item?.dateTime)"
+        :note="item.private ? '仅个人可见' : ''"
       >
         <text>
           {{ item.text }}
@@ -84,6 +86,14 @@
         :files="light.imgs"
         @change="imgSelectChange"
       />
+      <at-checkbox
+        v-model:selected-list="privateSelect"
+        :options="[{
+          value: 'private',
+          label: '个人',
+          desc: '选择个人后，将只有你自己可见'
+        }]"
+      />
       <at-button
         type="primary"
         @click="submit"
@@ -102,6 +112,7 @@ import Taro, { useReachBottom, usePullDownRefresh, useDidShow } from '@tarojs/ta
 import CookList from '../cookList/index.vue';
 import { CloudRes } from '../../type';
 import genId from '../../utils/genId';
+import { format } from '../../utils/time';
 import store, { UserInfo } from '../../utils/store';
 import foodImg from '../../assets/img/top-food.png';
 import foodSelectedImg from '../../assets/img/top-food-select.png';
@@ -115,6 +126,7 @@ interface ImgFile {
 interface Light {
   text: string,
   imgs: ImgFile[],
+  private?: boolean,
 }
 
 interface LightShow {
@@ -122,6 +134,8 @@ interface LightShow {
   text: string,
   imgs: string[],
   user: UserInfo,
+  dateTime: string,
+  private?: boolean,
 }
 
 interface CookExspose {
@@ -141,6 +155,7 @@ const light = reactive<Light>({
   imgs: [],
 });
 const lightList = ref<LightShow[]>([]);
+const privateSelect = ref([]);
 
 const barList = [
   { title: '光影', iconType: 'camera' },
@@ -192,7 +207,6 @@ async function updateList() {
 }
 
 function clickTab(v) {
-  console.log('v: ', v);
   currentTab.value = v;
 }
 
@@ -239,6 +253,7 @@ function closeSubmit() {
   showEdit.value = false;
   light.text = '';
   light.imgs = [];
+  privateSelect.value = [];
 }
 
 function uploadImgPromise(fileName: string, filePath: string) {
@@ -262,6 +277,7 @@ async function submit() {
     data: {
       text: light.text,
       imgs: fileIdList,
+      private: privateSelect.value.length > 0,
       user: store.api.getUser(),
     },
   }).then(() => {

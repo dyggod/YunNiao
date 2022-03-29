@@ -71,16 +71,22 @@ const userInfoShow = reactive({
   nickName: '',
 });
 
-function getOpenId() {
-  Taro.cloud.callFunction({
-    name: 'yy_getOpenid',
-  }).then((res) => {
-    const result = res.result as AuthRes;
-    if (result.isAdmin) {
-      store.api.setAdmin();
-    }
-  }).catch((err) => {
-    console.error('getOpenid error', err);
+async function getOpenId() {
+  return new Promise((resolve, reject) => {
+    Taro.cloud.callFunction({
+      name: 'yy_getOpenid',
+    }).then((res) => {
+      const result = res.result as AuthRes;
+      if (result.isAdmin) {
+        store.api.setAdmin();
+      } else {
+        store.api.setNotAdmin();
+      }
+      resolve(true);
+    }).catch((err) => {
+      console.error('getOpenid error', err);
+      reject(err);
+    });
   });
 }
 
@@ -101,10 +107,6 @@ function login() {
 
 function getStore() {
   try {
-    const auth = store.api.getAdmin();
-    if (auth === '') {
-      store.api.deleteAll();
-    }
     loginStatus.value = store.api.getLogin();
     const user = store.api.getUser();
     if (user) {
