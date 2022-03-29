@@ -307,7 +307,7 @@ function deleteRecord(index: number) {
   Taro.cloud.deleteFile({
     fileList: imgs,
     success: async (res) => {
-      if (res.fileList.length > 0) {
+      if (res.fileList.length >= 0) {
         const deleteRes = await Taro.cloud.callFunction({
           name: 'yy_deleteRecord',
           data: deleteLight,
