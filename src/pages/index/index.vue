@@ -9,11 +9,11 @@
         :tab-list="barList"
         :current="currentTab"
         class="tab-bar"
+        background-color="#fafafa"
         @click="clickTab"
       />
       <at-button
         type="primary"
-        size="small"
         class="btn"
         @click="clickShowEidt"
       >
@@ -103,6 +103,8 @@ import CookList from '../cookList/index.vue';
 import { CloudRes } from '../../type';
 import genId from '../../utils/genId';
 import store, { UserInfo } from '../../utils/store';
+import foodImg from '../../assets/img/top-food.png';
+import foodSelectedImg from '../../assets/img/top-food-select.png';
 import './index.less';
 
 interface ImgFile {
@@ -141,8 +143,12 @@ const light = reactive<Light>({
 const lightList = ref<LightShow[]>([]);
 
 const barList = [
-  { title: '光影' },
-  { title: '美食' },
+  { title: '光影', iconType: 'camera' },
+  {
+    title: '美食',
+    image: foodImg,
+    selectedImage: foodSelectedImg,
+  },
 ];
 
 function initUser() {
@@ -342,7 +348,7 @@ useReachBottom(() => {
 <style lang="less">
 .index {
   position: relative;
-  padding-top: 90px;
+  padding-top: 110px;
 }
 
 .top {
@@ -351,14 +357,17 @@ useReachBottom(() => {
   position: fixed;
   box-sizing: border-box;
   width: 100%;
-  height: 80px;
+  height: 100px;
   padding: 0 16px;
-  background-color: #eee;
+  background-color: #fafafa;
   z-index: 1000;
   top: 0;
 
   .tab-bar {
-    background-color: #eee !important;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
   }
 
   .btn {

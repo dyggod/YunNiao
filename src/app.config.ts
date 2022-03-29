@@ -17,9 +17,13 @@ export default defineAppConfig({
     list: [{
       pagePath: 'pages/index/index',
       text: '影•食',
+      iconPath: './assets/img/bar-index.png',
+      selectedIconPath: './assets/img/bar-index-select.png',
     }, {
       pagePath: 'pages/user/index',
       text: 'MY',
+      iconPath: './assets/img/bar-my.png',
+      selectedIconPath: './assets/img/bar-my-select.png',
     }],
   },
 });
