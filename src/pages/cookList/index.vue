@@ -1,5 +1,12 @@
 <template>
   <view>
+    <view>
+      <at-search-bar
+        v-if="!formVisible && nowPage === Step.TypeSelect"
+        v-model:value="searchValue"
+        @action-click="onActionClick"
+      />
+    </view>
     <view
       v-if="!formVisible && nowPage === Step.TypeSelect"
       class="cook-types"
@@ -148,6 +155,7 @@ import { CookReview } from './types';
 import { CloudRes } from '../../type';
 import { CookRange } from '../../config/cook';
 
+const searchValue = ref('');
 const formVisible = ref<boolean>(false);
 
 const cookList = ref<CookReview[]>([]);
@@ -164,6 +172,21 @@ enum Step {
 }
 
 const nowPage = ref(Step.TypeSelect);
+
+function onActionClick() {
+  Taro.cloud.callFunction({
+    name: 'yy_cook_list',
+    data: {
+      search: searchValue.value,
+    },
+  }).then((res) => {
+    const result = res.result as CloudRes;
+    if (result) {
+      cookList.value = result?.data;
+      nowPage.value = Step.CookList;
+    }
+  });
+}
 
 function getCookList(type: string) {
   Taro.cloud.callFunction({
