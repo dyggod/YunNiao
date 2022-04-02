@@ -238,8 +238,9 @@ defineExpose({
 .one-type-list {
   .img-container {
     width: 5rem !important;
-    height: 4rem !important;
+    height: 5rem !important;
     padding-left: 1rem;
+    padding-bottom: 0.5rem;
     .img {
       width: 100%;
       height: 100%;
