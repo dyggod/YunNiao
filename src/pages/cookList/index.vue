@@ -22,14 +22,27 @@
       class="one-type-list"
     >
       <at-list>
-        <at-list-item
+        <view
           v-for="(item, index) in cookList"
           :key="index"
-          :title="item.name"
-          :note="`贡献者：${item.user?.nickName}`"
-          arrow="right"
-          @click="clickShowDetail(item)"
-        />
+        >
+          <at-list-item
+            :title="item.name"
+            :note="`贡献者：${item.user?.nickName}`"
+            arrow="right"
+            extra-text="详情"
+            @click="clickShowDetail(item)"
+          />
+          <view
+            v-if="item.outcome.length > 0"
+            class="img-container"
+          >
+            <image
+              :src="item.outcome[item.outcome.length - 1]?.replace(/[\r\n]/g,'')"
+              class="img"
+            />
+          </view>
+        </view>
         <at-list-item
           v-if="cookList.length === 0"
           title="暂无相关食谱"
@@ -221,4 +234,18 @@ defineExpose({
     }
   }
 }
+
+.one-type-list {
+  .img-container {
+    width: 5rem !important;
+    height: 4rem !important;
+    padding-left: 1rem;
+    .img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+}
+
 </style>
